@@ -17,7 +17,8 @@ export const SocketProvider = ({ children }) => {
   const [connectionStats, setConnectionStats] = useState({});
 
   useEffect(() => {
-    const newSocket = io('http://localhost:5000', {
+    const SOCKET_URL = process.env.REACT_APP_API_URL || 'https://digasater-backend.onrender.com/';
+    const newSocket = io(SOCKET_URL, {
       transports: ['websocket'],
       upgrade: false
     });
