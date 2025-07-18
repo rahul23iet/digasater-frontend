@@ -6,6 +6,7 @@ import { Box } from '@mui/material';
 
 // Components
 import Navbar from './components/Navbar';
+import ProtectedRoute from './components/ProtectedRoute';
 import Dashboard from './pages/Dashboard';
 import DisasterList from './pages/DisasterList';
 import DisasterDetail from './pages/DisasterDetail';
@@ -13,8 +14,11 @@ import ResourceMap from './pages/ResourceMap';
 import SocialMedia from './pages/SocialMedia';
 import Reports from './pages/Reports';
 import ImageVerification from './pages/ImageVerification';
+import Login from './pages/Login';
+import Unauthorized from './pages/Unauthorized';
 
 // Context
+import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import { DisasterProvider } from './context/DisasterContext';
 
@@ -45,26 +49,43 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <SocketProvider>
-        <DisasterProvider>
-          <Router>
-            <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-              <Navbar />
-              <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-                <Routes>
-                  <Route path="/" element={<Dashboard />} />
-                  <Route path="/disasters" element={<DisasterList />} />
-                  <Route path="/disasters/:id" element={<DisasterDetail />} />
-                  <Route path="/resources" element={<ResourceMap />} />
-                  <Route path="/social-media" element={<SocialMedia />} />
-                  <Route path="/reports" element={<Reports />} />
-                  <Route path="/image-verification" element={<ImageVerification />} />
-                </Routes>
-              </Box>
-            </Box>
-          </Router>
-        </DisasterProvider>
-      </SocketProvider>
+      <AuthProvider>
+        <SocketProvider>
+          <DisasterProvider>
+            <Router>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/unauthorized" element={<Unauthorized />} />
+                
+                {/* Protected routes */}
+                <Route path="/*" element={
+                  <ProtectedRoute>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+                      <Navbar />
+                      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+                        <Routes>
+                          <Route path="/" element={<Dashboard />} />
+                          <Route path="/disasters" element={<DisasterList />} />
+                          <Route path="/disasters/:id" element={<DisasterDetail />} />
+                          <Route path="/resources" element={<ResourceMap />} />
+                          <Route path="/social-media" element={<SocialMedia />} />
+                          <Route path="/reports" element={<Reports />} />
+                          <Route path="/image-verification" element={
+                            <ProtectedRoute requiredRole="contributor">
+                              <ImageVerification />
+                            </ProtectedRoute>
+                          } />
+                        </Routes>
+                      </Box>
+                    </Box>
+                  </ProtectedRoute>
+                } />
+              </Routes>
+            </Router>
+          </DisasterProvider>
+        </SocketProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

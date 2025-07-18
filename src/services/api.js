@@ -13,7 +13,13 @@ const api = axios.create({
 // Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // Add auth token if available
+    // Add user ID header for mock authentication
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      config.headers['x-user-id'] = userId;
+    }
+    
+    // Add auth token if available (for future real auth)
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -32,8 +38,10 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Handle unauthorized access
+      // Handle unauthorized access - clear all auth data
       localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('currentUser');
       window.location.href = '/login';
     }
     return Promise.reject(error.response?.data || error.message);
